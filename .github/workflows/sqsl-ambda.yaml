@@ -56,20 +56,15 @@ jobs:
                     }
                 ]
             }'
-          fi
-
-            
-            
-      
+          fi   
+             
       - name: Update Lambda Function Code
         run: |
           zip function.zip *
-          if aws lambda get-function --function-name ProcessSQSRecordTest; then
-            # Update the Lambda function
-            aws lambda update-function-code --function-name ProcessSQSRecordTest --zip-file fileb://function.zip
+          if aws lambda get-function --function-name ProcessTaskUpdate; then
+            aws lambda update-function-code --function-name ProcessTaskUpdate --zip-file fileb://function.zip
           else
-            # Create the Lambda function
-            aws lambda create-function --function-name ProcessSQSRecordTest \
+            aws lambda create-function --function-name ProcessTaskUpdate \
               --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
               --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }}
           fi
