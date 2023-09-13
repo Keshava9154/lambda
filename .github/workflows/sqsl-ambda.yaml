@@ -1,0 +1,77 @@
+name: Deploy Lambda Function
+on:
+  workflow_dispatch: 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env: 
+      ROLE_NAME: "lambda-sqs-role"
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          
+      - name: Configure AWS CLI
+        run: aws configure set default.region us-east-2
+
+      - name: Get AWS account ID
+        id: aws_account_id
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "::set-output name=account_id::$aws_account_id"  
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14  # You can adjust the Node.js version
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Check and create Lambda execution role
+        run: |
+          if aws iam get-role --role-name "${{ env.ROLE_NAME }}" 2>&1; then
+            echo "Role already exists"
+            echo "::set-output name=roleExists::true"
+          else
+            echo "Policy does not exist"
+            aws iam create-role \
+              --role-name ${{ env.ROLE_NAME }} \
+              --assume-role-policy-document '{
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }'
+          fi
+
+            
+            
+      
+      - name: Update Lambda Function Code
+        run: |
+          zip function.zip *
+          if aws lambda get-function --function-name ProcessSQSRecordTest; then
+            # Update the Lambda function
+            aws lambda update-function-code --function-name ProcessSQSRecordTest --zip-file fileb://function.zip
+          else
+            # Create the Lambda function
+            aws lambda create-function --function-name ProcessSQSRecordTest \
+              --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
+              --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }}
+          fi
+            
+        
