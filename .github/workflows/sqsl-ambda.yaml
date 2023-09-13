@@ -71,7 +71,16 @@ jobs:
 
       - name: Create event source mapping
         run: |
-          aws lambda create-event-source-mapping --function-name ProcessTaskUpdate  --batch-size 10 \
-          --event-source-arn arn:aws:sqs:us-east-2:${{ steps.aws_account_id.outputs.account_id }}:task-update    
+          mapping_exists=$(aws lambda list-event-source-mappings --function-name ProcessTaskUpdate --query "length(EventSourceMappings)" --output text)
+          if [ "$mapping_exists" -eq 0 ]; then
+            aws lambda create-event-source-mapping --function-name ProcessTaskUpdate  --batch-size 10 \
+            --event-source-arn arn:aws:sqs:us-east-2:${{ steps.aws_account_id.outputs.account_id }}:task-update
+          else
+            #echo "::set-output name=mapping_exists::true"
+            echo "Mapping already exists"
+          fi
+          
+
+          
             
         
