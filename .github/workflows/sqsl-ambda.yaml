@@ -68,5 +68,10 @@ jobs:
               --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
               --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }}
           fi
+
+      - name: Create event source mapping
+        run: |
+          aws lambda create-event-source-mapping --function-name ProcessTaskUpdate  --batch-size 10 \
+          --event-source-arn arn:aws:sqs:us-east-2:${{ steps.aws_account_id.outputs.account_id }}:task-update    
             
         
