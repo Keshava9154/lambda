@@ -1,0 +1,30 @@
+name: Deploy Lambda Function
+on:
+  workflow_dispatch: 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env: 
+      ROLE_NAME: "lambda-sqs-role"
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          
+      - name: Configure AWS CLI
+        run: aws configure set default.region us-east-2
+
+      - name: Get AWS account ID
+        id: aws_account_id
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "::set-output name=account_id::$aws_account_id"
+      - name: echo
+        run: echo ${{ env.test }}
