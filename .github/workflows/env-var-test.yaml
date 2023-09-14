@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: env-test
 on:
   workflow_dispatch: 
 jobs:
