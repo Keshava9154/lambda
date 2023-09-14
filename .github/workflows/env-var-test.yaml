@@ -27,4 +27,4 @@ jobs:
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
           echo "::set-output name=account_id::$aws_account_id"
       - name: echo
-        run: echo ${{ env.test }}
+        run: echo "${{ env.test }}"
