@@ -111,9 +111,9 @@ jobs:
           else
             echo "Security group $security_group_name does not exist. Creating...."
             aws ec2 create-security-group \
-              --group-name ProcessTaskUpdateLambdaSG \
-              --vpc-id vpc-07de58553d116a808 \
-              --description "Security group for ProcessTaskUpdate Lambda Function"
+            --group-name ProcessTaskUpdateLambdaSG \
+            --vpc-id vpc-07de58553d116a808 \
+            --description "Security group for ProcessTaskUpdate Lambda Function"
           fi
           sleep 10
           LambdaSG=$(aws ec2 describe-security-groups \
