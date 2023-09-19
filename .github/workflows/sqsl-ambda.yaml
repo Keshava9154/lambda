@@ -105,6 +105,7 @@ jobs:
         run: |  
           aws ec2 create-security-group \
             --group-name ProcessTaskUpdateLambdaSG \
+            --vpc-id vpc-07de58553d116a808 \
             --description "Security group for ProcessTaskUpdate Lambda Function"
           LambdaSG=$(aws ec2 describe-security-groups \
             --filters Name=group-name,Values=ProcessTaskUpdateLambdaSG \
