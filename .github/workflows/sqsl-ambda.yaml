@@ -105,7 +105,7 @@ jobs:
       - name: Security Group Creation
         run: |  
           security_group_name="ProcessTaskUpdateLambdaSG"
-          security-group=$(aws ec2 describe-security-groups --group-names "$security_group_name" 2>&1)
+          security_group=$(aws ec2 describe-security-groups --group-names "$security_group_name" 2>&1)
           if [ $? -eq 0 ]; then
             echo "Security group $security_group_name exists."
           else
