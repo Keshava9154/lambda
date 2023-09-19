@@ -35,6 +35,31 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Check if External Secrets IAM policy exists
+        id: check_external_secrets_policy
+        run: |
+          SECRET_POLICY_NAME="lambda-vpc-policy"
+          if aws iam get-policy --policy-arn "arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:policy/$SECRET_POLICY_NAME" >/dev/null 2>&1; then
+            echo "Policy already exists"
+            echo "::set-output name=policyExists::true"
+          else
+            echo "Policy does not exist"
+            aws iam create-policy \
+            --policy-name lambda-vpc-policy \
+            --policy-document '{
+              "Version": "2012-10-17",
+              "Statement": [  
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }'
+          fi
+
       - name: Check and create Lambda execution role
         run: |
           if aws iam get-role --role-name "${{ env.ROLE_NAME }}" 2>&1; then
@@ -66,6 +91,9 @@ jobs:
           aws iam attach-role-policy \
             --role-name ${{ env.ROLE_NAME }} \
             --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:policy/lambda-vpc-policy  
              
       - name: Update Lambda Function Code
         run: |
