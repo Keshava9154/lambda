@@ -104,6 +104,7 @@ jobs:
              
       - name: Update Lambda Function Code
         run: |
+          sleep 10
           zip function.zip *
           if aws lambda get-function --function-name ProcessTaskUpdate; then
             aws lambda update-function-code --function-name ProcessTaskUpdate --zip-file fileb://function.zip 
