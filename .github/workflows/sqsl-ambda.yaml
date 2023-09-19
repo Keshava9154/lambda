@@ -66,7 +66,7 @@ jobs:
           else
             aws lambda create-function --function-name ProcessTaskUpdate \
               --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
-              --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }}
+              --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }} \
               --vpc-config SubnetIds=subnet-03d5dc8ebe1455262,subnet-0660371dbdcc869dc,SecurityGroupIds=sg-0226eb0b4ccf6158e
           fi
 
