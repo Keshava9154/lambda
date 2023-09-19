@@ -57,6 +57,15 @@ jobs:
                 ]
             }'
           fi   
+
+      - name: Attach policy to the role
+        run: |
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
              
       - name: Update Lambda Function Code
         run: |
