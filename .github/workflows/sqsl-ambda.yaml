@@ -62,7 +62,7 @@ jobs:
         run: |
           zip function.zip *
           if aws lambda get-function --function-name ProcessTaskUpdate; then
-            aws lambda update-function-code --function-name ProcessTaskUpdate --zip-file fileb://function.zip
+            aws lambda update-function-code --function-name ProcessTaskUpdate --zip-file fileb://function.zip --vpc-config SubnetIds=subnet-03d5dc8ebe1455262,subnet-0660371dbdcc869dc,SecurityGroupIds=sg-0226eb0b4ccf6158e
           else
             aws lambda create-function --function-name ProcessTaskUpdate \
               --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
