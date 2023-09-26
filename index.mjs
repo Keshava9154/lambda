@@ -13,7 +13,7 @@
      console.log(apiValue); 
      const response = {
          statusCode: 200,
-         body: JSON.stringify('Hello from Lambda! Byeeee'),
+         body: JSON.stringify('Hello from Lambda!'),
      };
      return response;
  };
