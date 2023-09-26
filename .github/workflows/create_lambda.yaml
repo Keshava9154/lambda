@@ -1,0 +1,173 @@
+name: Deploy Lambda Function in Dev
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env: 
+      ROLE_NAME: "HeliosLambdaExecutionRole"
+      vpc-id: "vpc-07de58553d116a808"
+      SG_Name: "TaskUpdateLambdaSG"
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          
+      - name: Configure AWS CLI
+        run: aws configure set default.region us-east-2
+
+      - name: Get Private Subnets
+        id: get-subnets
+        run: |
+          # Replace with your AWS CLI command to fetch the private subnets based on the tag value
+          PRIVATE_SUBNETS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=${{ env.vpc-id }}" "Name=tag-value,Values=*private*" --query "Subnets[].SubnetId" --output json)
+
+          # Use jq to parse the JSON output and create individual variables
+          INDEX=1
+          for SUBNET_ID in $(echo $PRIVATE_SUBNETS | jq -r '.[]'); do
+            echo "Subnet_ID_$INDEX=$SUBNET_ID" >> $GITHUB_ENV
+            INDEX=$((INDEX + 1))
+          done
+
+      - name: Set Environment Variables
+        run: |
+          # Load the environment variables
+          source $GITHUB_ENV
+
+          # Example: Access individual subnet variables
+          echo "Private Subnet 1: $Subnet_ID_1"
+          echo "Private Subnet 2: $Subnet_ID_2"
+
+      - name: Get AWS account ID
+        id: aws_account_id
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "::set-output name=account_id::$aws_account_id"  
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18  # You can adjust the Node.js version
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Check if lambda vpc policy exists
+        id: check_lambda_vpc_policy
+        run: |
+          POLICY_NAME="lambda-vpc-policy"
+          if aws iam get-policy --policy-arn "arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:policy/$POLICY_NAME" >/dev/null 2>&1; then
+            echo "Policy already exists"
+            echo "::set-output name=policyExists::true"
+          else
+            echo "Policy does not exist"
+            aws iam create-policy \
+            --policy-name lambda-vpc-policy \
+            --policy-document '{
+              "Version": "2012-10-17",
+              "Statement": [  
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:DescribeInstances",
+                    "ec2:AttachNetworkInterface",
+                    "eks:*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }'
+          fi
+
+      - name: Check and create Lambda execution role
+        run: |
+          if aws iam get-role --role-name "${{ env.ROLE_NAME }}" 2>&1; then
+            echo "Role already exists"
+            echo "::set-output name=roleExists::true"
+          else
+            echo "Policy does not exist"
+            aws iam create-role \
+              --role-name ${{ env.ROLE_NAME }} \
+              --assume-role-policy-document '{
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            }'
+          fi   
+
+      - name: Attach policy to the role
+        run: |
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::aws:policy/SecretsManagerReadWrite
+          aws iam attach-role-policy \
+            --role-name ${{ env.ROLE_NAME }} \
+            --policy-arn arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:policy/lambda-vpc-policy  
+            
+      - name: Security Group Creation
+        run: |  
+          result=$(aws ec2 describe-security-groups --query "SecurityGroups[?GroupName=='ProcessTaskUpdateLambdaSG' && VpcId=='${{ env.vpc-id }}'].GroupName" --output json | jq -r '.[0]' )
+          if [ "$result" == "null" ]; then  
+            echo "Security group ${{ env.SG_Name }} does not exist. Creating..."
+            aws ec2 create-security-group \
+              --group-name ${{ env.SG_Name }} \
+              --vpc-id ${{ env.vpc-id }} \
+              --description "Security group for ProcessTaskUpdate Lambda Function"
+          else
+            echo "Security group $security_group_name exists."
+          fi
+
+          sleep 10
+          
+          LambdaSG=$(aws ec2 describe-security-groups \
+            --filters Name=group-name,Values=${{ env.SG_Name }} \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text)
+          echo "LambdaSG=$LambdaSG" >> $GITHUB_ENV
+  
+          
+      - name: Update Lambda Function Code
+        run: |
+          zip function.zip *
+          if aws lambda get-function --function-name ProcessTaskUpdate; then
+            aws lambda update-function-code --function-name ProcessTaskUpdate --zip-file fileb://function.zip 
+          else
+            aws lambda create-function --function-name ProcessTaskUpdate \
+              --zip-file fileb://function.zip --handler index.handler --runtime nodejs18.x \
+              --role arn:aws:iam::${{ steps.aws_account_id.outputs.account_id }}:role/${{ env.ROLE_NAME }} \
+              --vpc-config SubnetIds=${{ env.Subnet_ID_1 }},${{ env.Subnet_ID_2 }},SecurityGroupIds=${{ env.LambdaSG }}
+          fi
+
+      - name: Create event source mapping
+        run: |
+          mapping_exists=$(aws lambda list-event-source-mappings --function-name ProcessTaskUpdate --query "length(EventSourceMappings)" --output text)
+          if [ "$mapping_exists" -eq 0 ]; then
+            aws lambda create-event-source-mapping --function-name ProcessTaskUpdate  --batch-size 10 \
+            --event-source-arn arn:aws:sqs:us-east-2:${{ steps.aws_account_id.outputs.account_id }}:task-update
+          else
+            #echo "::set-output name=mapping_exists::true"
+            echo "Mapping already exists"
+          fi
