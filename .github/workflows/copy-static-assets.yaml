@@ -48,8 +48,8 @@ jobs:
           # aws s3api wait bucket-exists --bucket ${{ env.Qaplubliclogsbucket }}
           # aws s3api put-bucket-ownership-controls --bucket ${{ env.Qapublicbucket }} --ownership-controls=BucketOwnerPreferred
           aws s3api put-bucket-ownership-controls \
-            --bucket "${{ env.Qapublicbucket }}" \
-            --ownership-controls '{"Rules": [{"ObjectOwnership": "BucketOwnerPreferred"}]}'
+            --bucket DOC-EXAMPLE-BUCKET \
+            --ownership-controls="Rules=[{ObjectOwnership=BucketOwnerEnforced}]"
 
           
 
