@@ -39,5 +39,6 @@ jobs:
           #   aws s3api put-public-access-block --bucket ${{ env.Qapublicbucket }} --public-access-block-configuration "BlockPublicAcls=false"
           #   aws s3api put-object --bucket ${{ env.Qapublicbucket }} --key assets/
           # fi    
-          aws s3api put-bucket-policy --bucket ${{ env.Qapublicbucket }} --policy file://s3bucketpolicy.json
-          aws s3 cp .github/workflows/* arn:aws:s3:::${{ env.Qapublicbucket }}/assets
+          #aws s3api put-bucket-policy --bucket ${{ env.Qapublicbucket }} --policy file://s3bucketpolicy.json
+          aws s3 cp .github/workflows/ s3://${{ env.Qapublicbucket }}/assets/ --recursive
+
