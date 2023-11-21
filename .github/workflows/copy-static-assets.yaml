@@ -29,15 +29,15 @@ jobs:
 
       - name: S3 bucket creation
         run: |
-          if aws s3api head-bucket --bucket ${{ env.Qapublicbucket }} 2>/dev/null; then
-            echo "Bucket exists."
-          else
-            echo "Bucket does not exist. Creating"
-            aws s3api create-bucket --bucket ${{ env.Qapublicbucket }} --create-bucket-configuration LocationConstraint=us-east-2
-            aws s3api wait bucket-exists --bucket ${{ env.Qapublicbucket }}
+          # if aws s3api head-bucket --bucket ${{ env.Qapublicbucket }} 2>/dev/null; then
+          #   echo "Bucket exists."
+          # else
+          #   echo "Bucket does not exist. Creating"
+          #   aws s3api create-bucket --bucket ${{ env.Qapublicbucket }} --create-bucket-configuration LocationConstraint=us-east-2
+          #   aws s3api wait bucket-exists --bucket ${{ env.Qapublicbucket }}
             
-            aws s3api put-public-access-block --bucket ${{ env.Qapublicbucket }} --public-access-block-configuration "BlockPublicAcls=false"
-            aws s3api put-object --bucket ${{ env.Qapublicbucket }} --key assets/
-          fi    
+          #   aws s3api put-public-access-block --bucket ${{ env.Qapublicbucket }} --public-access-block-configuration "BlockPublicAcls=false"
+          #   aws s3api put-object --bucket ${{ env.Qapublicbucket }} --key assets/
+          # fi    
           aws s3api put-bucket-policy --bucket ${{ env.Qapublicbucket }} --policy file://s3bucketpolicy.json
           aws s3 cp .github/workflows/* arn:aws:s3:::${{ env.Qapublicbucket }}/assets
