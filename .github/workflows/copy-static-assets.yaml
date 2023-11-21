@@ -49,7 +49,7 @@ jobs:
           # aws s3api put-bucket-ownership-controls --bucket ${{ env.Qapublicbucket }} --ownership-controls=BucketOwnerPreferred
           aws s3api put-bucket-ownership-controls \
             --bucket "${{ env.Qapublicbucket }}" \
-            --ownership-controls '{"Rules": [{"OwnershipControlsRule": {"OwnershipControls": {"BucketOwnershipControls": {"OwnershipControlsRule": {"ObjectOwnership": "BucketOwnerPreferred"}}}}}]}' 
+            --ownership-controls '{"Rules": [{"ObjectOwnership": "BucketOwnerPreferred"}]}'
 
           
 
