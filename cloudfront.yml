@@ -1,0 +1,29 @@
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+      - S3Bucket
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: "static-hosting-demo.s3.ap-south-1.amazonaws.com"
+            Id: static-hosting
+        Enabled: "true"
+        HttpVersion: http2
+        ViewerCertificate:
+          AcmCertificateArn: "arn:aws:acm:us-east-1:Id-of-IAM-User:certificate/1xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx"
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          TargetOriginId: static-hosting
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: "fcf5801c-b3e4-45d4-8b5c-8263ff3d7b47"  # Managed-CachingOptimized
+        Logging:
+          Bucket: !Ref S3Bucket
+          IncludeCookies: false
+          Prefix: "public-dev-logs/"
+
+        PriceClass: "PriceClass_All"  # Use all edge locations (best performance)
+
+        Aliases:
+          - "example.com"  
