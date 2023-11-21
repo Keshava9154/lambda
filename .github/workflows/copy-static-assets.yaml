@@ -1,0 +1,41 @@
+name: copy static assets
+on:
+  workflow_dispatch: 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env: 
+      Qapublicbucket: "public-qa"
+  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          
+      - name: Configure AWS CLI
+        run: aws configure set default.region us-east-2
+
+      - name: Get AWS account ID
+        id: aws_account_id
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "::set-output name=account_id::$aws_account_id" 
+
+      - name: S3 bucket creation
+        run: |
+          if aws s3api head-bucket --bucket ${{ env.Qapublicbucket }} 2>/dev/null; then
+            echo "Bucket exists."
+          else
+            echo "Bucket does not exist. Creating"
+            aws s3api create-bucket --bucket ${{ env.Qapublicbucket }} --acl public-read  --create-bucket-configuration LocationConstraint=us-east-2
+            aws s3api wait bucket-exists --bucket ${{ env.Qapublicbucket }}
+            aws s3api put-object --bucket ${{ env.Qapublicbucket }} --key assets/
+          fi    
+          aws s3api put-bucket-policy --bucket ${{ env.Qapublicbucket }} --policy file://s3bucketpolicy.json
+          aws s3 cp .github/workflows/* arn:aws:s3:::${{ env.Qapublicbucket }}/assets
