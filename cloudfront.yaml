@@ -3,6 +3,8 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
+        Aliases:
+          - "example.com"  
         Origins:
           - DomainName: "public-qa.s3.us-east-2.amazonaws.com"
             Id: static-hosting
@@ -25,5 +27,4 @@ Resources:
 
         PriceClass: "PriceClass_All"  # Use all edge locations (best performance)
 
-        Aliases:
-          - "example.com"  
+        
