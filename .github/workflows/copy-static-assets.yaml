@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     env: 
       Qapublicbucket: "public-qa"
-      Qaplubliclogsbucket: "public-qa-logs"
+      Qaplubliclogsbucket: "public-qa-log"
   
     steps:
       - name: Checkout repository
@@ -44,8 +44,8 @@ jobs:
           # aws s3 cp .github/workflows/ s3://${{ env.Qapublicbucket }}/assets/ --recursive
           # aws s3 sync .github/workflows/ s3://${{ env.Qapublicbucket }}/assets/ --delete
           
-          # aws s3api create-bucket --bucket ${{ env.Qaplubliclogsbucket }} --acl private --create-bucket-configuration LocationConstraint=us-east-2
-          # aws s3api wait bucket-exists --bucket ${{ env.Qaplubliclogsbucket }}
+          aws s3api create-bucket --bucket ${{ env.Qaplubliclogsbucket }} --ownership-controls BucketOwnerPreferred--create-bucket-configuration LocationConstraint=us-east-2
+          aws s3api wait bucket-exists --bucket ${{ env.Qaplubliclogsbucket }}
           
 
           aws cloudformation create-stack \
