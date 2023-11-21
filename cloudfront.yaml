@@ -8,10 +8,10 @@ Resources:
             Id: static-hosting
         Enabled: "true"
         HttpVersion: http2
-        ViewerCertificate:
-          # AcmCertificateArn: "arn:aws:acm:us-east-1:Id-of-IAM-User:certificate/1xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx"
-          # MinimumProtocolVersion: TLSv1.2_2021
-          SslSupportMethod: sni-only
+        # ViewerCertificate:
+        #   AcmCertificateArn: "arn:aws:acm:us-east-1:Id-of-IAM-User:certificate/1xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxx"
+        #   MinimumProtocolVersion: TLSv1.2_2021
+        #   SslSupportMethod: sni-only
         DefaultCacheBehavior:
           TargetOriginId: static-hosting
           ViewerProtocolPolicy: redirect-to-https
