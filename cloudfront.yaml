@@ -19,9 +19,9 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           CachePolicyId: "fcf5801c-b3e4-45d4-8b5c-8263ff3d7b47"  # Managed-CachingOptimized
         Logging:
-          Bucket: public-qa
+          Bucket: public-qa-logs
           IncludeCookies: false
-          Prefix: "public-dev-logs/"
+          Prefix: "qa/"
 
         PriceClass: "PriceClass_All"  # Use all edge locations (best performance)
 
