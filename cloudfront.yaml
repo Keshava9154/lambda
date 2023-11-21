@@ -6,6 +6,8 @@ Resources:
         Origins:
           - DomainName: "public-qa.s3.us-east-2.amazonaws.com"
             Id: static-hosting
+            S3OriginConfig:
+              OriginAccessIdentity: ''
         Enabled: "true"
         HttpVersion: http2
         # ViewerCertificate:
