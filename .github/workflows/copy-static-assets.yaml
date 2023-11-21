@@ -43,3 +43,7 @@ jobs:
           # aws s3 cp .github/workflows/ s3://${{ env.Qapublicbucket }}/assets/ --recursive
           aws s3 sync .github/workflows/ s3://${{ env.Qapublicbucket }}/assets/ --delete
 
+          aws cloudformation create-stack \
+            --template-body file://cloudfront.yaml \
+            --stack-name cloudfront-$GITHUB_RUN_ID
+          aws cloudformation wait stack-create-complete --stack-name cloudfront-$GITHUB_RUN_ID
