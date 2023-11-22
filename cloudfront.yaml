@@ -6,7 +6,7 @@ Resources:
         # Aliases:
         #   - app-static-dev.sunnyrewards.com
         Origins:
-          - DomainName: "public-qa-helio.s3.us-east-2.amazonaws.com"
+          - DomainName: "public-qa-helios.s3.us-east-2.amazonaws.com"
             Id: static-hosting
             S3OriginConfig:
               OriginAccessIdentity: ''
@@ -22,7 +22,7 @@ Resources:
           Compress: true
           CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6"  # Managed-CachingOptimized
         Logging:
-          Bucket: public-qa-log.s3.us-east-2.amazonaws.com
+          Bucket: public-qa-logs.s3.us-east-2.amazonaws.com
           IncludeCookies: false
 
         PriceClass: "PriceClass_All"  # Use all edge locations (best performance)

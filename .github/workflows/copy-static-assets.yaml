@@ -5,8 +5,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env: 
-      Qapublicbucket: "public-qa-helio"
-      Qaplubliclogsbucket: "public-qa-log"
+      Qapublicbucket: "public-qa-helios"
+      Qaplubliclogsbucket: "public-qa-logs"
   
     steps:
       - name: Checkout repository
