@@ -1,9 +1,10 @@
 {
-  "name": "ProcessSQSRecord",
-  "version": "1.0.0",
-  "description": "My AWS Lambda function",
-  "main": "index.mjs",
-  "dependencies": {
-    "aws-sdk": "^2.1000.0"
+    "name": "ProcessSQSRecord",
+    "version": "1.0.0",
+    "description": "My AWS Lambda function",
+    "main": "index.mjs",
+    "dependencies": {
+      "aws-sdk": "^2.1000.0"
+    }
   }
-}
+  
