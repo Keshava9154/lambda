@@ -42,7 +42,7 @@ jobs:
           fi    
           aws s3api put-bucket-policy --bucket ${{ env.Qapublicbucket }} --policy file://s3bucketpolicy.json
           # aws s3 cp package.json s3://${{ env.Qapublicbucket }}/assets/ --recursive --sse
-          aws s3 sync package.json s3://${{ env.Qapublicbucket }}/assets/ --sse
+          aws s3 sync images/ s3://${{ env.Qapublicbucket }}/assets/ --sse
           
           aws s3api create-bucket --bucket ${{ env.Qaplubliclogsbucket }} --object-ownership BucketOwnerPreferred --create-bucket-configuration LocationConstraint=us-east-2
           aws s3api wait bucket-exists --bucket ${{ env.Qaplubliclogsbucket }}
