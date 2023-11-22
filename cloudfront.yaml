@@ -24,7 +24,6 @@ Resources:
         Logging:
           Bucket: public-qa-log.s3.us-east-2.amazonaws.com
           IncludeCookies: false
-          Prefix: "qa/"
 
         PriceClass: "PriceClass_All"  # Use all edge locations (best performance)
 
