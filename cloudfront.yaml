@@ -4,7 +4,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - example.com
+          - app-static-dev.sunnyrewards.com
         Origins:
           - DomainName: "public-qa.s3.us-east-2.amazonaws.com"
             Id: static-hosting
